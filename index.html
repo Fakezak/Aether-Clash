@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AETHER CLASH</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+  <div id="ui">
+    <div id="main-menu">
+      <h1>AETHER CLASH</h1>
+      <p class="subtitle">ANIME FIGHTING ARENA</p>
+      <button onclick="startGame()">VERSUS MODE</button>
+      <button onclick="showTraining()">TRAINING MODE</button>
+      <button onclick="showOptions()">OPTIONS</button>
+    </div>
+
+    <div id="hud" style="display:none;">
+      <div class="health-bar" id="p1-health">KAEL <span id="p1-hp">100</span>%</div>
+      <div class="vs">VS</div>
+      <div class="health-bar" id="p2-health">LIRA <span id="p2-hp">100</span>%</div>
+    </div>
+  </div>
+
+  <canvas id="game"></canvas>
+
+  <script src="js/player.js"></script>
+  <script src="js/combat.js"></script>
+  <script src="js/camera.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
