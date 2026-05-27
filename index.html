@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=2.0, minimum-scale=0.5">
-  <title>⚔️ Anime Sword & Magic · Cutscene Duel</title>
+  <title>⚔️ SOUL EDGE · 3D Anime Duel</title>
   <style>
     * {
       margin: 0;
@@ -12,132 +12,216 @@
     }
 
     body {
-      background: #0a0c0f;
+      background: #030307;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       font-family: 'Segoe UI', 'Cinzel', 'Arial', sans-serif;
       padding: 20px;
-      margin: 0;
-      background-image: radial-gradient(circle at 30% 40%, #1e1a2f 5%, #040308 90%);
+      background-image: radial-gradient(circle at 20% 30%, #1e1a3a 5%, #010101 90%);
+      perspective: 1200px;
     }
 
-    .game-container {
-      max-width: 800px;
+    /* ----- START MENU / INTRO OVERLAY ----- */
+    .start-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      background: rgba(10, 12, 18, 0.8);
-      backdrop-filter: blur(18px);
-      border: 2px solid #c9a063;
-      border-radius: 3rem 3rem 2rem 2rem;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px #b87c2c80;
-      padding: 20px 20px 30px;
+      height: 100%;
+      background: radial-gradient(circle at center, #0d0b1a 0%, #020105 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
+      z-index: 200;
+      backdrop-filter: blur(20px);
+      transition: opacity 0.8s ease, visibility 0.8s;
+    }
+
+    .start-menu.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .intro-cinematic {
+      text-align: center;
+      animation: floatGlow 2s infinite alternate;
+    }
+
+    @keyframes floatGlow {
+      0% { text-shadow: 0 0 20px #c97e1a, 0 0 40px #b8450e; }
+      100% { text-shadow: 0 0 40px #f3bc5e, 0 0 80px #ff7b24; }
+    }
+
+    .game-logo {
+      font-size: 5.5rem;
+      font-family: 'Cinzel', 'Times New Roman', serif;
+      color: #f7e3b2;
+      filter: drop-shadow(0 0 35px #ff8c3a);
+      letter-spacing: 12px;
+      margin-bottom: 20px;
+      transform: rotateX(5deg);
+    }
+
+    .subtitle {
+      color: #d4af37;
+      font-size: 1.6rem;
+      letter-spacing: 6px;
+      margin-bottom: 45px;
+      text-transform: uppercase;
+      font-weight: 300;
+    }
+
+    .start-btn {
+      background: transparent;
+      border: 3px solid #e6b422;
+      color: #ffdd99;
+      font-size: 2rem;
+      padding: 15px 55px;
+      border-radius: 60px;
+      cursor: pointer;
+      font-weight: bold;
+      backdrop-filter: blur(12px);
+      background: rgba(20, 10, 20, 0.5);
+      transition: 0.3s;
+      letter-spacing: 4px;
+      box-shadow: 0 0 30px #b85e0c;
+      margin-top: 20px;
+    }
+
+    .start-btn:hover {
+      background: #b87c2c;
+      color: black;
+      box-shadow: 0 0 70px #ffaa33;
+      border-color: white;
+      transform: scale(1.07);
+    }
+
+    .intro-text {
+      color: #bbaa88;
+      font-style: italic;
+      margin: 25px 0;
+      font-size: 1.2rem;
+    }
+
+    /* ----- 3D GAME CONTAINER ----- */
+    .game-world {
+      max-width: 850px;
+      width: 100%;
+      background: rgba(5, 3, 12, 0.7);
+      backdrop-filter: blur(16px);
+      border: 2px solid #c9a063;
+      border-radius: 3.5rem 3.5rem 2.5rem 2.5rem;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.9), 0 0 45px #b87c2c;
+      padding: 18px 20px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform: rotateX(2deg) rotateY(0deg);
+      transform-style: preserve-3d;
+      transition: transform 0.2s;
     }
 
     h1 {
-      font-family: 'Cinzel', 'Times New Roman', serif;
+      font-family: 'Cinzel', serif;
       color: #f7e3b2;
-      text-shadow: 0 0 15px #ff8c3a, 0 0 5px black;
-      letter-spacing: 5px;
-      margin-bottom: 10px;
-      font-size: 2.4rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      filter: drop-shadow(0 4px 6px black);
+      text-shadow: 0 0 20px #ff8c3a, 0 0 8px black;
+      letter-spacing: 6px;
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+      transform: translateZ(25px);
     }
 
-    .arena {
-      background: radial-gradient(ellipse at center, #2d2a3e 0%, #0b0a12 100%);
+    /* 3D ARENA */
+    .arena-3d {
       width: 100%;
       aspect-ratio: 16 / 10;
-      border-radius: 40px;
+      border-radius: 45px;
       position: relative;
       overflow: hidden;
       border: 3px solid #b88645;
-      box-shadow: inset 0 0 60px rgba(0,0,0,0.9), 0 0 30px #b85e0c;
-      margin: 5px 0 15px;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" opacity="0.1"><path d="M20 80 L60 20 L100 70 L140 10 L180 60" stroke="%23d4af37" fill="none" stroke-width="2"/><circle cx="160" cy="75" r="5" fill="%23e6c27a"/></svg>');
-      background-size: cover;
+      box-shadow: inset 0 0 80px rgba(0,0,0,0.9), 0 25px 35px black;
+      background: radial-gradient(ellipse at center, #2d2640 0%, #0a0814 100%);
+      transform: rotateX(2deg) translateZ(10px);
+      margin: 5px 0 18px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" opacity="0.15"><path d="M15 85 L55 15 L95 65 L135 5 L175 55" stroke="%23d4af37" fill="none" stroke-width="3"/><circle cx="155" cy="70" r="8" fill="%23e6c27a"/></svg>');
     }
 
     .fighter {
       position: absolute;
       width: 22%;
       aspect-ratio: 1/1.4;
-      bottom: 12%;
-      filter: drop-shadow(0 10px 12px black);
-      transition: transform 0.25s ease-out, filter 0.2s;
+      bottom: 10%;
+      filter: drop-shadow(0 18px 15px black);
+      transition: transform 0.2s ease-out, filter 0.2s;
+      transform-style: preserve-3d;
       will-change: transform;
     }
 
     .player {
-      left: 12%;
-      background: center / contain no-repeat url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140"><defs><linearGradient id="g" x1="0%25" y1="0%25" x2="100%25" y2="100%25"><stop offset="0%25" stop-color="%233b6bb0"/><stop offset="100%25" stop-color="%23162b44"/></linearGradient></defs><rect x="35" y="15" width="30" height="35" rx="15" fill="%23f1dbb0"/><circle cx="50" cy="55" r="12" fill="%23ffccaa"/><path d="M35 70 L25 115 L35 110 L50 120 L65 110 L75 115 L65 70 Z" fill="url(%23g)" stroke="%23c9a24b" stroke-width="2.5"/><line x1="75" y1="50" x2="105" y2="35" stroke="%23d4dcec" stroke-width="6" stroke-linecap="round"/><polygon points="105,35 115,28 108,42" fill="%23f0f4ff"/><circle cx="97" cy="30" r="5" fill="%23aaccff" opacity="0.9"/></svg>');
-      transform-origin: bottom center;
+      left: 10%;
+      background: center / contain no-repeat url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140"><defs><linearGradient id="g" x1="0%25" y1="0%25" x2="100%25" y2="100%25"><stop offset="0%25" stop-color="%233b6bb0"/><stop offset="100%25" stop-color="%23162b44"/></linearGradient></defs><rect x="35" y="15" width="30" height="35" rx="15" fill="%23f1dbb0"/><circle cx="50" cy="55" r="12" fill="%23ffccaa"/><path d="M35 70 L25 115 L35 110 L50 120 L65 110 L75 115 L65 70 Z" fill="url(%23g)" stroke="%23c9a24b" stroke-width="2.8"/><line x1="75" y1="50" x2="108" y2="32" stroke="%23d4dcec" stroke-width="6" stroke-linecap="round"/><polygon points="108,32 118,25 111,39" fill="%23f0f4ff"/><circle cx="100" cy="27" r="6" fill="%23aaccff" opacity="0.9"/></svg>');
+      transform: rotateY(2deg) translateZ(15px);
     }
 
     .enemy {
-      right: 12%;
-      background: center / contain no-repeat url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140"><defs><linearGradient id="r" x1="0%25" y1="0%25" x2="100%25" y2="100%25"><stop offset="0%25" stop-color="%2399322e"/><stop offset="100%25" stop-color="%233e0f0f"/></linearGradient></defs><rect x="35" y="15" width="30" height="35" rx="15" fill="%23e0c29c"/><circle cx="50" cy="55" r="12" fill="%23ddb494"/><path d="M35 70 L25 115 L35 110 L50 120 L65 110 L75 115 L65 70 Z" fill="url(%23r)" stroke="%23b85e0c" stroke-width="2.5"/><line x1="25" y1="50" x2="-5" y2="35" stroke="%23905a5a" stroke-width="6" stroke-linecap="round"/><polygon points="-5,35 -15,28 -8,42" fill="%23d45d5d"/><circle cx="-3" cy="30" r="5" fill="%23ff7a3a" opacity="0.9"/></svg>');
-      transform-origin: bottom center;
-      transform: scaleX(-1);
+      right: 10%;
+      background: center / contain no-repeat url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140"><defs><linearGradient id="r" x1="0%25" y1="0%25" x2="100%25" y2="100%25"><stop offset="0%25" stop-color="%2399322e"/><stop offset="100%25" stop-color="%233e0f0f"/></linearGradient></defs><rect x="35" y="15" width="30" height="35" rx="15" fill="%23e0c29c"/><circle cx="50" cy="55" r="12" fill="%23ddb494"/><path d="M35 70 L25 115 L35 110 L50 120 L65 110 L75 115 L65 70 Z" fill="url(%23r)" stroke="%23b85e0c" stroke-width="2.8"/><line x1="25" y1="50" x2="-8" y2="32" stroke="%23905a5a" stroke-width="6" stroke-linecap="round"/><polygon points="-8,32 -18,25 -11,39" fill="%23d45d5d"/><circle cx="-3" cy="27" r="6" fill="%23ff7a3a" opacity="0.9"/></svg>');
+      transform: scaleX(-1) rotateY(-2deg) translateZ(15px);
     }
 
     .magic-effect {
       position: absolute;
-      font-size: 2.8rem;
-      text-shadow: 0 0 25px cyan, 0 0 45px #00a6ff;
+      font-size: 3rem;
+      text-shadow: 0 0 30px cyan, 0 0 55px #00a6ff;
       pointer-events: none;
-      animation: spellFlash 0.6s ease-out forwards;
-      z-index: 20;
+      animation: spellFlash 0.7s ease-out forwards;
+      z-index: 25;
+      transform: translateZ(30px);
     }
 
     @keyframes spellFlash {
-      0% { opacity: 0; transform: scale(0.2) translateY(0); }
-      30% { opacity: 1; transform: scale(1.5) translateY(-10px); }
-      100% { opacity: 0; transform: scale(2.3) translateY(-40px); }
+      0% { opacity: 0; transform: scale(0.1) translateY(0) translateZ(10px); }
+      30% { opacity: 1; transform: scale(1.6) translateY(-12px) translateZ(30px); }
+      100% { opacity: 0; transform: scale(2.5) translateY(-45px) translateZ(50px); }
     }
 
+    /* CUTSCENE OVERLAY */
     .cutscene-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(12px);
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(16px);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 100;
-      animation: fadeIn 0.2s;
+      z-index: 150;
+      animation: fadeIn 0.25s;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from { opacity: 0; } to { opacity: 1; }
     }
 
     .cutscene-card {
       background: #1e1525;
       border: 4px double #f3bc5e;
-      border-radius: 60px 20px 60px 20px;
-      padding: 30px;
+      border-radius: 70px 25px 70px 25px;
+      padding: 35px;
       text-align: center;
-      max-width: 400px;
-      box-shadow: 0 0 80px #c97e1a;
+      max-width: 420px;
+      box-shadow: 0 0 90px #c97e1a;
+      transform: rotateX(3deg);
     }
 
     .cutscene-text {
       color: #ffd78b;
-      font-size: 2.3rem;
+      font-size: 2.5rem;
       font-weight: bold;
-      text-shadow: 0 0 20px red, 0 0 40px orange;
+      text-shadow: 0 0 25px red, 0 0 50px orange;
       margin: 15px 0;
     }
 
@@ -146,11 +230,11 @@
       border: none;
       color: black;
       font-weight: bold;
-      padding: 10px 25px;
-      border-radius: 2rem;
-      font-size: 1.2rem;
+      padding: 12px 28px;
+      border-radius: 3rem;
+      font-size: 1.3rem;
       cursor: pointer;
-      margin-top: 15px;
+      margin-top: 20px;
     }
 
     .controls {
@@ -159,6 +243,7 @@
       justify-content: center;
       gap: 15px;
       margin: 10px 0 5px;
+      transform: translateZ(20px);
     }
 
     .magic-btn {
@@ -172,59 +257,57 @@
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       transition: 0.2s;
-      box-shadow: 0 4px 10px black;
+      box-shadow: 0 8px 18px black;
       letter-spacing: 1px;
+      transform: translateZ(5px);
     }
 
     .magic-btn:hover {
       background: #3a2f4c;
       border-color: #ffbb2e;
-      box-shadow: 0 0 25px #f0a500;
+      box-shadow: 0 0 30px #f0a500;
       color: white;
-    }
-
-    .sword-btn {
-      background: #2f2330;
-      border-color: #acacac;
     }
 
     .status {
       color: #ccb690;
       font-weight: bold;
       background: #0b0b10;
-      padding: 5px 18px;
-      border-radius: 20px;
-      margin: 5px;
-    }
-
-    @media (max-width: 500px) {
-      .magic-btn {
-        padding: 8px 14px;
-        font-size: 1rem;
-      }
+      padding: 6px 22px;
+      border-radius: 30px;
+      margin-top: 6px;
     }
   </style>
 </head>
 <body>
-<div class="game-container">
-  <h1>
-    <span>⚔️</span> SOUL EDGE <span>✨</span>
-  </h1>
+<!-- START MENU / INTRO -->
+<div class="start-menu" id="startMenu">
+  <div class="intro-cinematic">
+    <div class="game-logo">SOUL EDGE</div>
+    <div class="subtitle">⚔️ 刻の刃 ⚔️</div>
+    <p class="intro-text">「古の剣と魔法が交錯する」</p>
+    <button class="start-btn" id="beginJourneyBtn">⚡ ENGAGE ⚡</button>
+    <p style="color:#9e8b6f; margin-top:35px;">click to enter the 3D arena</p>
+  </div>
+</div>
 
-  <div class="arena" id="arena">
+<!-- 3D GAME INTERFACE (hidden until start) -->
+<div class="game-world" id="gameWorld" style="visibility: hidden; opacity: 0; transition: 0.5s;">
+  <h1>⚔️ SOUL EDGE ✨</h1>
+  <div class="arena-3d" id="arena">
     <div class="fighter player" id="playerFighter"></div>
     <div class="fighter enemy" id="enemyFighter"></div>
   </div>
 
   <div class="controls">
-    <button class="magic-btn sword-btn" id="basicSwordBtn">🗡️ Swift Strike</button>
+    <button class="magic-btn" id="basicSwordBtn" style="border-color:#acacac;">🗡️ Swift Strike</button>
     <button class="magic-btn" id="fireMagicBtn">🔥 Inferno Slash</button>
     <button class="magic-btn" id="iceMagicBtn">❄️ Frozen Petals</button>
     <button class="magic-btn" id="lightningMagicBtn">⚡ Thunder Edge</button>
   </div>
-  <div class="status" id="statusMessage">⚔️ Choose your attack...</div>
+  <div class="status" id="statusMessage">⚔️ Prepare for battle...</div>
 </div>
 
 <!-- Dynamic cutscene container -->
@@ -232,144 +315,156 @@
 
 <script>
   (function() {
-    // ----- ANIME SWORD & MAGIC CUTSCENE ENGINE -----
+    // ----- 3D ANIME SWORD & MAGIC WITH INTRO MENU -----
+    const startMenu = document.getElementById('startMenu');
+    const gameWorld = document.getElementById('gameWorld');
+    const beginBtn = document.getElementById('beginJourneyBtn');
+    
     const playerEl = document.getElementById('playerFighter');
     const enemyEl = document.getElementById('enemyFighter');
     const arena = document.getElementById('arena');
     const statusDiv = document.getElementById('statusMessage');
     const cutsceneContainer = document.getElementById('cutsceneContainer');
 
-    // Predefined cutscene data for each magic type
+    // Cutscene data
     const cutsceneLibrary = {
       fire: {
         title: "🔥 INFERNO SLASH",
-        description: "Flames engulf the blade! A fiery phoenix strikes the enemy.",
+        description: "Flames consume the blade! A phoenix erupts.",
         icon: "🔥🐦‍🔥",
         effectEmoji: "🔥💥"
       },
       ice: {
         title: "❄️ FROZEN PETALS",
-        description: "Blossoms freeze in time. A glacial wind cuts deep.",
+        description: "Time freezes. Cherry blossoms become ice shards.",
         icon: "❄️🌸",
         effectEmoji: "❄️✨"
       },
       lightning: {
         title: "⚡ THUNDER EDGE",
-        description: "Heavens roar! Lightning dances along the katana.",
+        description: "Lightning descends! The katana crackles with storms.",
         icon: "⚡🗡️",
         effectEmoji: "⚡🌩️"
       },
       sword: {
         title: "🗡️ SWIFT STRIKE",
-        description: "A precise, honorable slash without magic.",
+        description: "A flawless, honorable slash without magic.",
         icon: "⚔️💨",
         effectEmoji: "✨🗡️"
       }
     };
 
-    // Track if a cutscene is active to avoid overlapping
     let cutsceneActive = false;
-    // Timer references
-    let effectTimer = null;
+    let gameStarted = false;
 
-    // --- Utility: spawn floating magic effect on arena ---
-    function spawnEffect(emoji, xPercent, yPercent, extraClass = '') {
+    // ----- INTRO & START MENU LOGIC -----
+    function startGame() {
+      if (gameStarted) return;
+      gameStarted = true;
+      
+      // Hide menu with animation
+      startMenu.classList.add('hidden');
+      
+      // Show game world
+      gameWorld.style.visibility = 'visible';
+      gameWorld.style.opacity = '1';
+      gameWorld.style.transform = 'rotateX(2deg)';
+      
+      statusDiv.textContent = '⚔️ Enter the 3D duel! Choose magic.';
+      
+      // Small intro effect in arena
+      setTimeout(() => {
+        spawnEffect('⚡', 50, 40);
+        spawnEffect('✨', 45, 30);
+      }, 300);
+    }
+
+    beginBtn.addEventListener('click', startGame);
+
+    // Allow restart? If someone clicks logo maybe, but not needed.
+
+    // ----- 3D EFFECTS & UTILS -----
+    function spawnEffect(emoji, xPercent, yPercent) {
+      if (!arena) return;
       const effectDiv = document.createElement('div');
-      effectDiv.className = `magic-effect ${extraClass}`;
+      effectDiv.className = 'magic-effect';
       effectDiv.textContent = emoji;
       effectDiv.style.left = `${xPercent}%`;
       effectDiv.style.top = `${yPercent}%`;
       arena.appendChild(effectDiv);
       setTimeout(() => {
-        if (effectDiv && effectDiv.parentNode === arena) {
-          effectDiv.remove();
-        }
-      }, 650);
+        if (effectDiv && effectDiv.parentNode === arena) effectDiv.remove();
+      }, 700);
     }
 
-    // --- Trigger quick sword swing animation (no cutscene) ---
-    function animateSwordSlash(targetEnemy = true) {
-      // Player slash motion
+    function animateSwordSlash() {
+      if (!playerEl || !enemyEl) return;
       playerEl.style.transition = 'transform 0.15s ease-in-out';
-      playerEl.style.transform = 'translateX(30px) rotate(-8deg)';
+      playerEl.style.transform = 'translateX(35px) rotateY(5deg) rotate(-7deg) translateZ(18px)';
       setTimeout(() => {
-        playerEl.style.transform = '';
+        playerEl.style.transform = 'rotateY(2deg) translateZ(15px)';
         playerEl.style.transition = 'transform 0.25s ease-out';
+      }, 170);
+
+      enemyEl.style.transition = 'transform 0.15s ease-in';
+      enemyEl.style.transform = 'scaleX(-1) translateX(-25px) rotateY(-3deg) rotate(5deg) translateZ(10px)';
+      setTimeout(() => {
+        enemyEl.style.transform = 'scaleX(-1) rotateY(-2deg) translateZ(15px)';
+        enemyEl.style.transition = 'transform 0.3s ease-out';
       }, 160);
 
-      if (targetEnemy) {
-        // Enemy reacts
-        enemyEl.style.transition = 'transform 0.15s ease-in';
-        enemyEl.style.transform = 'scaleX(-1) translateX(-20px) rotate(4deg)';
-        setTimeout(() => {
-          enemyEl.style.transform = 'scaleX(-1)';
-          enemyEl.style.transition = 'transform 0.3s ease-out';
-        }, 150);
-      }
-
-      // Spawn slash spark near enemy
-      const enemyRect = enemyEl.getBoundingClientRect();
+      const rect = enemyEl.getBoundingClientRect();
       const arenaRect = arena.getBoundingClientRect();
-      if (enemyRect && arenaRect) {
-        const xPercent = ((enemyRect.left + enemyRect.width/2 - arenaRect.left) / arenaRect.width) * 100;
-        const yPercent = ((enemyRect.top + enemyRect.height/3 - arenaRect.top) / arenaRect.height) * 100;
-        spawnEffect('💥', xPercent, yPercent);
+      if (rect && arenaRect) {
+        const xP = ((rect.left + rect.width/2 - arenaRect.left) / arenaRect.width) * 100;
+        const yP = ((rect.top + rect.height/3 - arenaRect.top) / arenaRect.height) * 100;
+        spawnEffect('💥', xP, yP);
       }
     }
 
-    // --- Show animated cutscene overlay ---
+    // ----- CUTSCENE SYSTEM -----
     function showCutscene(magicKey) {
-      if (cutsceneActive) return;
+      if (cutsceneActive || !gameStarted) return;
       const data = cutsceneLibrary[magicKey];
       if (!data) return;
 
       cutsceneActive = true;
       statusDiv.textContent = `🌀 ${data.title} unleashed!`;
 
-      // Remove any existing cutscene
       cutsceneContainer.innerHTML = '';
-
       const overlay = document.createElement('div');
       overlay.className = 'cutscene-overlay';
-
       const card = document.createElement('div');
       card.className = 'cutscene-card';
       card.innerHTML = `
-        <div style="font-size: 4rem;">${data.icon}</div>
+        <div style="font-size: 4.5rem;">${data.icon}</div>
         <div class="cutscene-text">${data.title}</div>
-        <p style="color: #edd9b0; font-style: italic; margin: 5px 0;">${data.description}</p>
-        <div style="font-size: 2.5rem; margin: 10px 0;">${data.effectEmoji}</div>
+        <p style="color:#edd9b0; font-style:italic; margin:8px 0;">${data.description}</p>
+        <div style="font-size:2.8rem; margin:10px 0;">${data.effectEmoji}</div>
         <button class="close-btn" id="closeCutsceneBtn">⚡ CONTINUE</button>
       `;
-
       overlay.appendChild(card);
       cutsceneContainer.appendChild(overlay);
 
-      // Add dramatic visual effect on arena while cutscene plays
       if (magicKey === 'fire') {
-        spawnEffect('🔥', 70, 35);
-        spawnEffect('🐦‍🔥', 75, 25);
+        spawnEffect('🔥', 72, 32);
+        spawnEffect('🐦‍🔥', 78, 22);
       } else if (magicKey === 'ice') {
-        spawnEffect('❄️', 68, 30);
-        spawnEffect('🌸', 72, 40);
+        spawnEffect('❄️', 70, 28);
+        spawnEffect('🌸', 76, 38);
       } else if (magicKey === 'lightning') {
-        spawnEffect('⚡', 73, 28);
-        spawnEffect('🌩️', 78, 20);
+        spawnEffect('⚡', 74, 26);
+        spawnEffect('🌩️', 80, 18);
       } else if (magicKey === 'sword') {
-        spawnEffect('✨', 65, 35);
+        spawnEffect('✨', 68, 33);
       }
 
-      // Close button functionality
       const closeBtn = document.getElementById('closeCutsceneBtn');
       if (closeBtn) {
         closeBtn.addEventListener('click', closeCutsceneHandler);
       }
-
-      // Also allow closing by clicking outside card (but not on card)
-      overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) {
-          closeCutsceneHandler();
-        }
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeCutsceneHandler();
       });
     }
 
@@ -378,108 +473,68 @@
       cutsceneActive = false;
       cutsceneContainer.innerHTML = '';
       statusDiv.textContent = '⚔️ Battle continues...';
-      // Extra small enemy reaction after cutscene ends
-      enemyEl.style.transition = 'transform 0.2s';
-      enemyEl.style.transform = 'scaleX(-1) translateY(-8px)';
-      setTimeout(() => {
-        enemyEl.style.transform = 'scaleX(-1)';
-      }, 200);
+      if (enemyEl) {
+        enemyEl.style.transition = 'transform 0.25s';
+        enemyEl.style.transform = 'scaleX(-1) translateY(-10px) rotateY(-2deg) translateZ(15px)';
+        setTimeout(() => {
+          if (enemyEl) enemyEl.style.transform = 'scaleX(-1) rotateY(-2deg) translateZ(15px)';
+        }, 220);
+      }
     }
 
-    // --- Magic attack handler (with cutscene) ---
     function performMagicAttack(magicKey) {
-      if (cutsceneActive) {
-        statusDiv.textContent = '⏳ A cutscene is already playing!';
+      if (!gameStarted || cutsceneActive) {
+        if (cutsceneActive) statusDiv.textContent = '⏳ Cutscene in progress...';
         return;
       }
-
-      // Pre-attack animation (player leap)
-      playerEl.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
-      playerEl.style.transform = 'translateX(15px) translateY(-12px) rotate(-5deg)';
-      
+      playerEl.style.transition = 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1)';
+      playerEl.style.transform = 'translateX(18px) translateY(-16px) rotateY(8deg) rotate(-6deg) translateZ(25px)';
       setTimeout(() => {
-        playerEl.style.transform = '';
-        playerEl.style.transition = 'transform 0.3s ease-out';
-      }, 250);
-
-      // Trigger cutscene after short dramatic pause
+        playerEl.style.transform = 'rotateY(2deg) translateZ(15px)';
+        playerEl.style.transition = 'transform 0.3s';
+      }, 260);
       setTimeout(() => {
-        if (!cutsceneActive) {
-          showCutscene(magicKey);
-        }
-      }, 280);
-
-      // Additional arena effects immediately
-      if (magicKey === 'fire') {
-        spawnEffect('💥', 70, 40);
-        spawnEffect('🔥', 60, 30);
-      } else if (magicKey === 'ice') {
-        spawnEffect('❄️', 68, 38);
-        spawnEffect('✨', 74, 27);
-      } else if (magicKey === 'lightning') {
-        spawnEffect('⚡', 72, 36);
-      }
+        if (!cutsceneActive) showCutscene(magicKey);
+      }, 300);
     }
 
-    // --- Basic sword attack (no cutscene, pure animation) ---
     function basicSwordAttack() {
-      if (cutsceneActive) {
-        statusDiv.textContent = '⏳ Wait for cutscene to finish.';
+      if (!gameStarted || cutsceneActive) {
+        if (cutsceneActive) statusDiv.textContent = '⏳ Wait for cutscene.';
         return;
       }
       statusDiv.textContent = '🗡️ Swift slash!';
-      animateSwordSlash(true);
-      
-      // Small chance to show mini cutscene feel? No, but we keep it simple.
-      // Also show sword cutscene optionally? We can treat sword as light cutscene.
-      // According to request: "u get cut scene every magic u use animated cut scene"
-      // So magic triggers cutscene. Sword might not require cutscene, but we add a mini one for consistency.
-      // We'll trigger a very short sword cutscene for excitement.
+      animateSwordSlash();
       setTimeout(() => {
-        if (!cutsceneActive) {
-          showCutscene('sword');
-        }
-      }, 200);
+        if (!cutsceneActive) showCutscene('sword');
+      }, 220);
     }
 
-    // ----- Event Listeners -----
-    document.getElementById('fireMagicBtn').addEventListener('click', () => {
-      performMagicAttack('fire');
-    });
+    // ----- EVENT LISTENERS (only active after start) -----
+    document.getElementById('fireMagicBtn').addEventListener('click', () => performMagicAttack('fire'));
+    document.getElementById('iceMagicBtn').addEventListener('click', () => performMagicAttack('ice'));
+    document.getElementById('lightningMagicBtn').addEventListener('click', () => performMagicAttack('lightning'));
+    document.getElementById('basicSwordBtn').addEventListener('click', basicSwordAttack);
 
-    document.getElementById('iceMagicBtn').addEventListener('click', () => {
-      performMagicAttack('ice');
-    });
-
-    document.getElementById('lightningMagicBtn').addEventListener('click', () => {
-      performMagicAttack('lightning');
-    });
-
-    document.getElementById('basicSwordBtn').addEventListener('click', () => {
-      basicSwordAttack();
-    });
-
-    // Initial status
-    statusDiv.textContent = '✨ Choose magic or sword strike...';
-
-    // Clean up any global listener issues (remove duplicate close handlers if any)
-    window.addEventListener('load', () => {
-      // reset cutscene state if needed
-      cutsceneActive = false;
-      cutsceneContainer.innerHTML = '';
-    });
-
-    // Additional touch: enemy idle animation (subtle)
+    // Subtle idle 3D movement
     setInterval(() => {
-      if (!cutsceneActive && enemyEl && playerEl) {
-        // tiny idle breathing
-        enemyEl.style.transition = 'transform 0.9s ease-in-out';
-        enemyEl.style.transform = 'scaleX(-1) translateY(-3px)';
+      if (gameStarted && !cutsceneActive && enemyEl && playerEl) {
+        enemyEl.style.transition = 'transform 1s ease-in-out';
+        enemyEl.style.transform = 'scaleX(-1) translateY(-5px) rotateY(-2deg) translateZ(15px)';
         setTimeout(() => {
-          if (enemyEl) enemyEl.style.transform = 'scaleX(-1)';
-        }, 450);
+          if (enemyEl) enemyEl.style.transform = 'scaleX(-1) rotateY(-2deg) translateZ(15px)';
+        }, 500);
       }
-    }, 3000);
+    }, 3200);
+
+    // Clean start state
+    window.addEventListener('load', () => {
+      cutsceneActive = false;
+      gameStarted = false;
+      startMenu.classList.remove('hidden');
+      gameWorld.style.visibility = 'hidden';
+      gameWorld.style.opacity = '0';
+    });
 
   })();
 </script>
