@@ -2,219 +2,486 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AETHER CLASH - First Person Sword Fight</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/loaders/GLTFLoader.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=2.0, minimum-scale=0.5">
+  <title>⚔️ Anime Sword & Magic · Cutscene Duel</title>
   <style>
-    body { margin:0; overflow:hidden; background:#000; font-family: 'Impact', sans-serif; }
-    #game { position:absolute; top:0; left:0; width:100%; height:100%; }
-    #crosshair { position:absolute; top:50%; left:50%; font-size:30px; color:#ff3366; transform:translate(-50%,-50%); pointer-events:none; user-select:none; }
-    #hud { position:absolute; top:20px; left:20px; color:white; font-size:1.4rem; }
-    #health { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); padding:10px 30px; border:3px solid #ff3366; font-size:1.6rem; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0c0f;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', 'Cinzel', 'Arial', sans-serif;
+      padding: 20px;
+      margin: 0;
+      background-image: radial-gradient(circle at 30% 40%, #1e1a2f 5%, #040308 90%);
+    }
+
+    .game-container {
+      max-width: 800px;
+      width: 100%;
+      background: rgba(10, 12, 18, 0.8);
+      backdrop-filter: blur(18px);
+      border: 2px solid #c9a063;
+      border-radius: 3rem 3rem 2rem 2rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px #b87c2c80;
+      padding: 20px 20px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-family: 'Cinzel', 'Times New Roman', serif;
+      color: #f7e3b2;
+      text-shadow: 0 0 15px #ff8c3a, 0 0 5px black;
+      letter-spacing: 5px;
+      margin-bottom: 10px;
+      font-size: 2.4rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      filter: drop-shadow(0 4px 6px black);
+    }
+
+    .arena {
+      background: radial-gradient(ellipse at center, #2d2a3e 0%, #0b0a12 100%);
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      border-radius: 40px;
+      position: relative;
+      overflow: hidden;
+      border: 3px solid #b88645;
+      box-shadow: inset 0 0 60px rgba(0,0,0,0.9), 0 0 30px #b85e0c;
+      margin: 5px 0 15px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" opacity="0.1"><path d="M20 80 L60 20 L100 70 L140 10 L180 60" stroke="%23d4af37" fill="none" stroke-width="2"/><circle cx="160" cy="75" r="5" fill="%23e6c27a"/></svg>');
+      background-size: cover;
+    }
+
+    .fighter {
+      position: absolute;
+      width: 22%;
+      aspect-ratio: 1/1.4;
+      bottom: 12%;
+      filter: drop-shadow(0 10px 12px black);
+      transition: transform 0.25s ease-out, filter 0.2s;
+      will-change: transform;
+    }
+
+    .player {
+      left: 12%;
+      background: center / contain no-repeat url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140"><defs><linearGradient id="g" x1="0%25" y1="0%25" x2="100%25" y2="100%25"><stop offset="0%25" stop-color="%233b6bb0"/><stop offset="100%25" stop-color="%23162b44"/></linearGradient></defs><rect x="35" y="15" width="30" height="35" rx="15" fill="%23f1dbb0"/><circle cx="50" cy="55" r="12" fill="%23ffccaa"/><path d="M35 70 L25 115 L35 110 L50 120 L65 110 L75 115 L65 70 Z" fill="url(%23g)" stroke="%23c9a24b" stroke-width="2.5"/><line x1="75" y1="50" x2="105" y2="35" stroke="%23d4dcec" stroke-width="6" stroke-linecap="round"/><polygon points="105,35 115,28 108,42" fill="%23f0f4ff"/><circle cx="97" cy="30" r="5" fill="%23aaccff" opacity="0.9"/></svg>');
+      transform-origin: bottom center;
+    }
+
+    .enemy {
+      right: 12%;
+      background: center / contain no-repeat url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140"><defs><linearGradient id="r" x1="0%25" y1="0%25" x2="100%25" y2="100%25"><stop offset="0%25" stop-color="%2399322e"/><stop offset="100%25" stop-color="%233e0f0f"/></linearGradient></defs><rect x="35" y="15" width="30" height="35" rx="15" fill="%23e0c29c"/><circle cx="50" cy="55" r="12" fill="%23ddb494"/><path d="M35 70 L25 115 L35 110 L50 120 L65 110 L75 115 L65 70 Z" fill="url(%23r)" stroke="%23b85e0c" stroke-width="2.5"/><line x1="25" y1="50" x2="-5" y2="35" stroke="%23905a5a" stroke-width="6" stroke-linecap="round"/><polygon points="-5,35 -15,28 -8,42" fill="%23d45d5d"/><circle cx="-3" cy="30" r="5" fill="%23ff7a3a" opacity="0.9"/></svg>');
+      transform-origin: bottom center;
+      transform: scaleX(-1);
+    }
+
+    .magic-effect {
+      position: absolute;
+      font-size: 2.8rem;
+      text-shadow: 0 0 25px cyan, 0 0 45px #00a6ff;
+      pointer-events: none;
+      animation: spellFlash 0.6s ease-out forwards;
+      z-index: 20;
+    }
+
+    @keyframes spellFlash {
+      0% { opacity: 0; transform: scale(0.2) translateY(0); }
+      30% { opacity: 1; transform: scale(1.5) translateY(-10px); }
+      100% { opacity: 0; transform: scale(2.3) translateY(-40px); }
+    }
+
+    .cutscene-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 0.2s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .cutscene-card {
+      background: #1e1525;
+      border: 4px double #f3bc5e;
+      border-radius: 60px 20px 60px 20px;
+      padding: 30px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0 0 80px #c97e1a;
+    }
+
+    .cutscene-text {
+      color: #ffd78b;
+      font-size: 2.3rem;
+      font-weight: bold;
+      text-shadow: 0 0 20px red, 0 0 40px orange;
+      margin: 15px 0;
+    }
+
+    .close-btn {
+      background: #d4af37;
+      border: none;
+      color: black;
+      font-weight: bold;
+      padding: 10px 25px;
+      border-radius: 2rem;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin: 10px 0 5px;
+    }
+
+    .magic-btn {
+      background: #1a1428;
+      border: 2px solid #dba851;
+      color: #fdedc3;
+      padding: 12px 22px;
+      border-radius: 3rem;
+      font-weight: bold;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.2s;
+      box-shadow: 0 4px 10px black;
+      letter-spacing: 1px;
+    }
+
+    .magic-btn:hover {
+      background: #3a2f4c;
+      border-color: #ffbb2e;
+      box-shadow: 0 0 25px #f0a500;
+      color: white;
+    }
+
+    .sword-btn {
+      background: #2f2330;
+      border-color: #acacac;
+    }
+
+    .status {
+      color: #ccb690;
+      font-weight: bold;
+      background: #0b0b10;
+      padding: 5px 18px;
+      border-radius: 20px;
+      margin: 5px;
+    }
+
+    @media (max-width: 500px) {
+      .magic-btn {
+        padding: 8px 14px;
+        font-size: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <div id="crosshair">+</div>
-  <div id="hud">AETHER CLASH - FIRST PERSON SWORD FIGHT</div>
-  <div id="health">Health: <span id="player-hp">100</span>%</div>
-  <canvas id="game"></canvas>
+<div class="game-container">
+  <h1>
+    <span>⚔️</span> SOUL EDGE <span>✨</span>
+  </h1>
 
-  <script>
-    let scene, camera, renderer;
-    let player, enemy;
-    let keys = {};
-    let moveSpeed = 0.25;
-    let isAttacking = false;
-    let canAttack = true;
-    let playerHealth = 100;
+  <div class="arena" id="arena">
+    <div class="fighter player" id="playerFighter"></div>
+    <div class="fighter enemy" id="enemyFighter"></div>
+  </div>
 
-    class SwordFighter {
-      constructor(isPlayer) {
-        this.isPlayer = isPlayer;
-        this.health = 100;
-        this.model = null;
-        this.sword = null;
+  <div class="controls">
+    <button class="magic-btn sword-btn" id="basicSwordBtn">🗡️ Swift Strike</button>
+    <button class="magic-btn" id="fireMagicBtn">🔥 Inferno Slash</button>
+    <button class="magic-btn" id="iceMagicBtn">❄️ Frozen Petals</button>
+    <button class="magic-btn" id="lightningMagicBtn">⚡ Thunder Edge</button>
+  </div>
+  <div class="status" id="statusMessage">⚔️ Choose your attack...</div>
+</div>
+
+<!-- Dynamic cutscene container -->
+<div id="cutsceneContainer"></div>
+
+<script>
+  (function() {
+    // ----- ANIME SWORD & MAGIC CUTSCENE ENGINE -----
+    const playerEl = document.getElementById('playerFighter');
+    const enemyEl = document.getElementById('enemyFighter');
+    const arena = document.getElementById('arena');
+    const statusDiv = document.getElementById('statusMessage');
+    const cutsceneContainer = document.getElementById('cutsceneContainer');
+
+    // Predefined cutscene data for each magic type
+    const cutsceneLibrary = {
+      fire: {
+        title: "🔥 INFERNO SLASH",
+        description: "Flames engulf the blade! A fiery phoenix strikes the enemy.",
+        icon: "🔥🐦‍🔥",
+        effectEmoji: "🔥💥"
+      },
+      ice: {
+        title: "❄️ FROZEN PETALS",
+        description: "Blossoms freeze in time. A glacial wind cuts deep.",
+        icon: "❄️🌸",
+        effectEmoji: "❄️✨"
+      },
+      lightning: {
+        title: "⚡ THUNDER EDGE",
+        description: "Heavens roar! Lightning dances along the katana.",
+        icon: "⚡🗡️",
+        effectEmoji: "⚡🌩️"
+      },
+      sword: {
+        title: "🗡️ SWIFT STRIKE",
+        description: "A precise, honorable slash without magic.",
+        icon: "⚔️💨",
+        effectEmoji: "✨🗡️"
       }
-    }
+    };
 
-    async function init() {
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x110022);
-      scene.fog = new THREE.Fog(0x110022, 15, 60);
+    // Track if a cutscene is active to avoid overlapping
+    let cutsceneActive = false;
+    // Timer references
+    let effectTimer = null;
 
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 1.8, 0);
-
-      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game'), antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.shadowMap.enabled = true;
-
-      // Lights
-      scene.add(new THREE.AmbientLight(0xaaaaaa, 0.8));
-      const dirLight = new THREE.DirectionalLight(0xffaaee, 1.2);
-      dirLight.position.set(10, 20, 10);
-      scene.add(dirLight);
-
-      // Floor
-      const floor = new THREE.Mesh(
-        new THREE.PlaneGeometry(100, 100),
-        new THREE.MeshStandardMaterial({ color: 0x220033 })
-      );
-      floor.rotation.x = -Math.PI / 2;
-      scene.add(floor);
-
-      // Enemy (Lira)
-      enemy = new SwordFighter(false);
-      enemy.model = new THREE.Mesh(
-        new THREE.BoxGeometry(2, 4, 2),
-        new THREE.MeshStandardMaterial({ color: 0x9900ff })
-      );
-      enemy.model.position.set(8, 2, 0);
-      scene.add(enemy.model);
-
-      // Simple Sword for Player (First Person)
-      const swordGroup = new THREE.Group();
-      const blade = new THREE.Mesh(
-        new THREE.BoxGeometry(0.1, 3, 0.1),
-        new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9 })
-      );
-      blade.position.set(0.5, -1.5, -1.5);
-      swordGroup.add(blade);
-      scene.add(swordGroup);
-      playerSword = swordGroup;
-
-      document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
-      document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
-      document.addEventListener('mousedown', onMouseClick);
-
-      // Lock mouse pointer
-      document.addEventListener('click', () => document.body.requestPointerLock());
-
-      document.addEventListener('mousemove', onMouseMove);
-
-      animate();
-    }
-
-    let yaw = 0, pitch = 0;
-    function onMouseMove(e) {
-      if (document.pointerLockElement) {
-        yaw -= e.movementX * 0.002;
-        pitch -= e.movementY * 0.002;
-        pitch = Math.max(-1.5, Math.min(1.5, pitch));
-        camera.rotation.set(pitch, yaw, 0);
-      }
-    }
-
-    let playerSword;
-    function onMouseClick(e) {
-      if (e.button === 0 && canAttack) { // Left Click - Attack
-        attack();
-      }
-      if (e.button === 2) { // Right Click - Block
-        console.log("BLOCK!");
-      }
-    }
-
-    function attack() {
-      if (!canAttack) return;
-      canAttack = false;
-      isAttacking = true;
-
-      // Sword swing animation
-      playerSword.rotation.z = -1.2;
+    // --- Utility: spawn floating magic effect on arena ---
+    function spawnEffect(emoji, xPercent, yPercent, extraClass = '') {
+      const effectDiv = document.createElement('div');
+      effectDiv.className = `magic-effect ${extraClass}`;
+      effectDiv.textContent = emoji;
+      effectDiv.style.left = `${xPercent}%`;
+      effectDiv.style.top = `${yPercent}%`;
+      arena.appendChild(effectDiv);
       setTimeout(() => {
-        playerSword.rotation.z = 0;
-        isAttacking = false;
-      }, 300);
-
-      // Check hit
-      if (enemy.model) {
-        const distance = camera.position.distanceTo(enemy.model.position);
-        if (distance < 6) {
-          enemy.health -= 25;
-          createHitEffect(enemy.model.position);
-          if (enemy.health <= 0) {
-            alert("You Win! Victory!");
-            location.reload();
-          }
+        if (effectDiv && effectDiv.parentNode === arena) {
+          effectDiv.remove();
         }
+      }, 650);
+    }
+
+    // --- Trigger quick sword swing animation (no cutscene) ---
+    function animateSwordSlash(targetEnemy = true) {
+      // Player slash motion
+      playerEl.style.transition = 'transform 0.15s ease-in-out';
+      playerEl.style.transform = 'translateX(30px) rotate(-8deg)';
+      setTimeout(() => {
+        playerEl.style.transform = '';
+        playerEl.style.transition = 'transform 0.25s ease-out';
+      }, 160);
+
+      if (targetEnemy) {
+        // Enemy reacts
+        enemyEl.style.transition = 'transform 0.15s ease-in';
+        enemyEl.style.transform = 'scaleX(-1) translateX(-20px) rotate(4deg)';
+        setTimeout(() => {
+          enemyEl.style.transform = 'scaleX(-1)';
+          enemyEl.style.transition = 'transform 0.3s ease-out';
+        }, 150);
       }
 
-      setTimeout(() => canAttack = true, 600);
+      // Spawn slash spark near enemy
+      const enemyRect = enemyEl.getBoundingClientRect();
+      const arenaRect = arena.getBoundingClientRect();
+      if (enemyRect && arenaRect) {
+        const xPercent = ((enemyRect.left + enemyRect.width/2 - arenaRect.left) / arenaRect.width) * 100;
+        const yPercent = ((enemyRect.top + enemyRect.height/3 - arenaRect.top) / arenaRect.height) * 100;
+        spawnEffect('💥', xPercent, yPercent);
+      }
     }
 
-    function createHitEffect(pos) {
-      const particles = new THREE.Points(
-        new THREE.BufferGeometry(),
-        new THREE.PointsMaterial({ color: 0xff0000, size: 0.4 })
-      );
-      particles.position.copy(pos);
-      scene.add(particles);
-      setTimeout(() => scene.remove(particles), 300);
-    }
+    // --- Show animated cutscene overlay ---
+    function showCutscene(magicKey) {
+      if (cutsceneActive) return;
+      const data = cutsceneLibrary[magicKey];
+      if (!data) return;
 
-    function animate() {
-      requestAnimationFrame(animate);
+      cutsceneActive = true;
+      statusDiv.textContent = `🌀 ${data.title} unleashed!`;
 
-      // Player Movement
-      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+      // Remove any existing cutscene
+      cutsceneContainer.innerHTML = '';
 
-      if (keys['w']) camera.position.addScaledVector(forward, moveSpeed);
-      if (keys['s']) camera.position.addScaledVector(forward, -moveSpeed);
-      if (keys['a']) camera.position.addScaledVector(right, -moveSpeed);
-      if (keys['d']) camera.position.addScaledVector(right, moveSpeed);
+      const overlay = document.createElement('div');
+      overlay.className = 'cutscene-overlay';
 
-      // Enemy simple AI
-      if (enemy.model) {
-        const dirToPlayer = new THREE.Vector3().subVectors(camera.position, enemy.model.position).normalize();
-        enemy.model.position.addScaledVector(dirToPlayer, 0.08);
+      const card = document.createElement('div');
+      card.className = 'cutscene-card';
+      card.innerHTML = `
+        <div style="font-size: 4rem;">${data.icon}</div>
+        <div class="cutscene-text">${data.title}</div>
+        <p style="color: #edd9b0; font-style: italic; margin: 5px 0;">${data.description}</p>
+        <div style="font-size: 2.5rem; margin: 10px 0;">${data.effectEmoji}</div>
+        <button class="close-btn" id="closeCutsceneBtn">⚡ CONTINUE</button>
+      `;
 
-        if (Math.random() < 0.02) {
-          createHitEffect(camera.position);
-          playerHealth -= 8;
-          document.getElementById('player-hp').textContent = Math.max(0, playerHealth);
-          if (playerHealth <= 0) {
-            alert("You Died! Game Over");
-            location.reload();
-          }
+      overlay.appendChild(card);
+      cutsceneContainer.appendChild(overlay);
+
+      // Add dramatic visual effect on arena while cutscene plays
+      if (magicKey === 'fire') {
+        spawnEffect('🔥', 70, 35);
+        spawnEffect('🐦‍🔥', 75, 25);
+      } else if (magicKey === 'ice') {
+        spawnEffect('❄️', 68, 30);
+        spawnEffect('🌸', 72, 40);
+      } else if (magicKey === 'lightning') {
+        spawnEffect('⚡', 73, 28);
+        spawnEffect('🌩️', 78, 20);
+      } else if (magicKey === 'sword') {
+        spawnEffect('✨', 65, 35);
+      }
+
+      // Close button functionality
+      const closeBtn = document.getElementById('closeCutsceneBtn');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeCutsceneHandler);
+      }
+
+      // Also allow closing by clicking outside card (but not on card)
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+          closeCutsceneHandler();
         }
-      }
-
-      // Fire Power (Press F)
-      if (keys['f']) {
-        createFireExplosion(camera.position);
-        keys['f'] = false;
-      }
-
-      renderer.render(scene, camera);
+      });
     }
 
-    function createFireExplosion(pos) {
-      const count = 50;
-      const geom = new THREE.BufferGeometry();
-      const positions = new Float32Array(count * 3);
-      for (let i = 0; i < count * 3; i += 3) {
-        positions[i] = pos.x + (Math.random()-0.5)*4;
-        positions[i+1] = pos.y + Math.random()*3;
-        positions[i+2] = pos.z + (Math.random()-0.5)*4;
-      }
-      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      const mat = new THREE.PointsMaterial({ color: 0xff8800, size: 0.5, transparent: true });
-      const fire = new THREE.Points(geom, mat);
-      scene.add(fire);
-      setTimeout(() => scene.remove(fire), 600);
+    function closeCutsceneHandler() {
+      if (!cutsceneActive) return;
+      cutsceneActive = false;
+      cutsceneContainer.innerHTML = '';
+      statusDiv.textContent = '⚔️ Battle continues...';
+      // Extra small enemy reaction after cutscene ends
+      enemyEl.style.transition = 'transform 0.2s';
+      enemyEl.style.transform = 'scaleX(-1) translateY(-8px)';
+      setTimeout(() => {
+        enemyEl.style.transform = 'scaleX(-1)';
+      }, 200);
     }
 
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+    // --- Magic attack handler (with cutscene) ---
+    function performMagicAttack(magicKey) {
+      if (cutsceneActive) {
+        statusDiv.textContent = '⏳ A cutscene is already playing!';
+        return;
+      }
+
+      // Pre-attack animation (player leap)
+      playerEl.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      playerEl.style.transform = 'translateX(15px) translateY(-12px) rotate(-5deg)';
+      
+      setTimeout(() => {
+        playerEl.style.transform = '';
+        playerEl.style.transition = 'transform 0.3s ease-out';
+      }, 250);
+
+      // Trigger cutscene after short dramatic pause
+      setTimeout(() => {
+        if (!cutsceneActive) {
+          showCutscene(magicKey);
+        }
+      }, 280);
+
+      // Additional arena effects immediately
+      if (magicKey === 'fire') {
+        spawnEffect('💥', 70, 40);
+        spawnEffect('🔥', 60, 30);
+      } else if (magicKey === 'ice') {
+        spawnEffect('❄️', 68, 38);
+        spawnEffect('✨', 74, 27);
+      } else if (magicKey === 'lightning') {
+        spawnEffect('⚡', 72, 36);
+      }
+    }
+
+    // --- Basic sword attack (no cutscene, pure animation) ---
+    function basicSwordAttack() {
+      if (cutsceneActive) {
+        statusDiv.textContent = '⏳ Wait for cutscene to finish.';
+        return;
+      }
+      statusDiv.textContent = '🗡️ Swift slash!';
+      animateSwordSlash(true);
+      
+      // Small chance to show mini cutscene feel? No, but we keep it simple.
+      // Also show sword cutscene optionally? We can treat sword as light cutscene.
+      // According to request: "u get cut scene every magic u use animated cut scene"
+      // So magic triggers cutscene. Sword might not require cutscene, but we add a mini one for consistency.
+      // We'll trigger a very short sword cutscene for excitement.
+      setTimeout(() => {
+        if (!cutsceneActive) {
+          showCutscene('sword');
+        }
+      }, 200);
+    }
+
+    // ----- Event Listeners -----
+    document.getElementById('fireMagicBtn').addEventListener('click', () => {
+      performMagicAttack('fire');
     });
 
-    // Start Game
-    init();
-  </script>
+    document.getElementById('iceMagicBtn').addEventListener('click', () => {
+      performMagicAttack('ice');
+    });
+
+    document.getElementById('lightningMagicBtn').addEventListener('click', () => {
+      performMagicAttack('lightning');
+    });
+
+    document.getElementById('basicSwordBtn').addEventListener('click', () => {
+      basicSwordAttack();
+    });
+
+    // Initial status
+    statusDiv.textContent = '✨ Choose magic or sword strike...';
+
+    // Clean up any global listener issues (remove duplicate close handlers if any)
+    window.addEventListener('load', () => {
+      // reset cutscene state if needed
+      cutsceneActive = false;
+      cutsceneContainer.innerHTML = '';
+    });
+
+    // Additional touch: enemy idle animation (subtle)
+    setInterval(() => {
+      if (!cutsceneActive && enemyEl && playerEl) {
+        // tiny idle breathing
+        enemyEl.style.transition = 'transform 0.9s ease-in-out';
+        enemyEl.style.transform = 'scaleX(-1) translateY(-3px)';
+        setTimeout(() => {
+          if (enemyEl) enemyEl.style.transform = 'scaleX(-1)';
+        }, 450);
+      }
+    }, 3000);
+
+  })();
+</script>
 </body>
 </html>
