@@ -1,0 +1,13 @@
+{
+  "name": "Lira",
+  "title": "Shadow Veil",
+  "health": 100,
+  "speed": 0.22,
+  "power": "Shadow",
+  "color": "#9900ff",
+  "moves": {
+    "light": { "name": "Shadow Dagger", "damage": 10, "cooldown": 0.35 },
+    "heavy": { "name": "Void Crush", "damage": 22, "cooldown": 1.1 },
+    "special": { "name": "Dark Pulse", "damage": 40, "cooldown": 2.8 }
+  }
+}
