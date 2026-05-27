@@ -3,306 +3,218 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AETHER CLASH</title>
+  <title>AETHER CLASH - First Person Sword Fight</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/loaders/GLTFLoader.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #0a001f;
-      font-family: 'Impact', 'Arial Black', sans-serif;
-      overflow: hidden;
-      color: white;
-    }
-    #game { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-    
-    #main-menu {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      z-index: 100;
-    }
-    #main-menu h1 {
-      font-size: 5.8rem;
-      letter-spacing: 10px;
-      background: linear-gradient(90deg, #ff0088, #00ddff, #ff0088);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 50px #ff00ff;
-      margin-bottom: 10px;
-    }
-    .subtitle {
-      font-size: 1.5rem;
-      color: #00ffff;
-      margin-bottom: 50px;
-      letter-spacing: 6px;
-    }
-    button {
-      padding: 18px 60px;
-      margin: 15px;
-      font-size: 1.5rem;
-      background: rgba(10, 0, 40, 0.85);
-      border: 3px solid #00ffff;
-      color: white;
-      cursor: pointer;
-      transition: all 0.4s;
-      text-transform: uppercase;
-      border-radius: 8px;
-    }
-    button:hover {
-      background: #00ffff;
-      color: #000;
-      box-shadow: 0 0 40px #00ffff;
-      transform: scale(1.08);
-    }
-    .health-bar {
-      position: absolute;
-      top: 30px;
-      font-size: 1.8rem;
-      padding: 15px 30px;
-      background: rgba(0,0,0,0.8);
-      border: 5px solid;
-      border-radius: 10px;
-    }
-    #p1-health { left: 80px; border-color: #ff3366; }
-    #p2-health { right: 80px; border-color: #33ff99; }
-    .vs {
-      position: absolute;
-      top: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 2.5rem;
-      color: #ffff00;
-      text-shadow: 0 0 20px #ffff00;
-    }
+    body { margin:0; overflow:hidden; background:#000; font-family: 'Impact', sans-serif; }
+    #game { position:absolute; top:0; left:0; width:100%; height:100%; }
+    #crosshair { position:absolute; top:50%; left:50%; font-size:30px; color:#ff3366; transform:translate(-50%,-50%); pointer-events:none; user-select:none; }
+    #hud { position:absolute; top:20px; left:20px; color:white; font-size:1.4rem; }
+    #health { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); padding:10px 30px; border:3px solid #ff3366; font-size:1.6rem; }
   </style>
 </head>
 <body>
-  <div id="ui">
-    <div id="main-menu">
-      <h1>AETHER CLASH</h1>
-      <p class="subtitle">ANIME FIGHTING ARENA</p>
-      <button onclick="startGame()">VERSUS MODE</button><br>
-      <button onclick="showTraining()">TRAINING MODE</button>
-      <button onclick="showOptions()">OPTIONS</button>
-    </div>
-
-    <div id="hud" style="display:none;">
-      <div class="health-bar" id="p1-health">KAEL <span id="p1-hp">100</span>%</div>
-      <div class="vs">VS</div>
-      <div class="health-bar" id="p2-health">LIRA <span id="p2-hp">100</span>%</div>
-    </div>
-  </div>
-
+  <div id="crosshair">+</div>
+  <div id="hud">AETHER CLASH - FIRST PERSON SWORD FIGHT</div>
+  <div id="health">Health: <span id="player-hp">100</span>%</div>
   <canvas id="game"></canvas>
 
   <script>
-    // ====================== GAME VARIABLES ======================
     let scene, camera, renderer;
-    let player1, player2;
+    let player, enemy;
     let keys = {};
-    let gameStarted = false;
-    let particleSystem;
+    let moveSpeed = 0.25;
+    let isAttacking = false;
+    let canAttack = true;
+    let playerHealth = 100;
 
-    // ====================== CHARACTER DATA ======================
-    const charData = {
-      kael: { name: "Kael", color: "#ff4400", power: "Fire" },
-      lira: { name: "Lira", color: "#9900ff", power: "Shadow" }
-    };
-
-    // ====================== PLAYER CLASS ======================
-    class Player {
-      constructor(name, position, isPlayer1) {
-        this.name = name;
+    class SwordFighter {
+      constructor(isPlayer) {
+        this.isPlayer = isPlayer;
         this.health = 100;
-        this.isPlayer1 = isPlayer1;
         this.model = null;
-        this.position = position;
-      }
-
-      async load(modelPath) {
-        const loader = new THREE.GLTFLoader();
-        try {
-          const gltf = await new Promise(resolve => loader.load(modelPath, resolve));
-          this.model = gltf.scene;
-          this.model.position.copy(this.position);
-          this.model.scale.set(1.6, 1.6, 1.6);
-        } catch(e) {
-          console.log("Model not found, using placeholder for", this.name);
-          // Create placeholder box if model missing
-          this.model = new THREE.Mesh(
-            new THREE.BoxGeometry(2, 4, 2),
-            new THREE.MeshStandardMaterial({ color: charData[this.name.toLowerCase()].color })
-          );
-          this.model.position.copy(this.position);
-        }
-        return this.model;
-      }
-
-      takeDamage(amount) {
-        this.health = Math.max(0, this.health - amount);
-        updateHealthUI(this.isPlayer1 ? 1 : 2, this.health);
+        this.sword = null;
       }
     }
 
-    // ====================== PARTICLE SYSTEM ======================
-    class ParticleSystem {
-      createFireExplosion(pos) {
-        const count = 80;
-        const geom = new THREE.BufferGeometry();
-        const posArray = new Float32Array(count * 3);
-        const colorArray = new Float32Array(count * 3);
-
-        for (let i = 0; i < count * 3; i += 3) {
-          posArray[i]   = pos.x + (Math.random() - 0.5) * 4;
-          posArray[i+1] = pos.y + Math.random() * 5;
-          posArray[i+2] = pos.z + (Math.random() - 0.5) * 4;
-          colorArray[i] = 1; colorArray[i+1] = 0.3 + Math.random()*0.7; colorArray[i+2] = 0;
-        }
-
-        geom.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        geom.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
-
-        const mat = new THREE.PointsMaterial({ size: 0.35, vertexColors: true, transparent: true, opacity: 1 });
-        const explosion = new THREE.Points(geom, mat);
-        scene.add(explosion);
-
-        let life = 1;
-        const fade = setInterval(() => {
-          life -= 0.08;
-          mat.opacity = life;
-          if (life <= 0) {
-            scene.remove(explosion);
-            clearInterval(fade);
-          }
-        }, 35);
-      }
-
-      createShadowPulse(pos) {
-        const sphere = new THREE.Mesh(
-          new THREE.SphereGeometry(2, 24, 24),
-          new THREE.MeshBasicMaterial({
-            color: 0x9900ff,
-            transparent: true,
-            opacity: 0.75,
-            blending: THREE.AdditiveBlending
-          })
-        );
-        sphere.position.copy(pos);
-        scene.add(sphere);
-
-        let scale = 1;
-        const expand = setInterval(() => {
-          scale += 0.35;
-          sphere.scale.set(scale, scale, scale);
-          sphere.material.opacity -= 0.1;
-          if (sphere.material.opacity <= 0) {
-            scene.remove(sphere);
-            clearInterval(expand);
-          }
-        }, 30);
-      }
-    }
-
-    // ====================== CAMERA ======================
-    function updateCamera() {
-      if (!player1?.model || !player2?.model) return;
-      const midX = (player1.model.position.x + player2.model.position.x) / 2;
-      const dist = Math.abs(player1.model.position.x - player2.model.position.x);
-
-      camera.position.set(midX, 8, Math.max(14, dist * 2 + 10));
-      camera.lookAt(midX, 3, 0);
-    }
-
-    // ====================== UI ======================
-    function updateHealthUI(playerNum, health) {
-      const el = document.getElementById(`p${playerNum}-hp`);
-      if (el) el.textContent = Math.round(health);
-    }
-
-    // ====================== GAME INIT ======================
     async function init() {
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x1a0033);
-      scene.fog = new THREE.FogExp2(0x1a0033, 0.028);
+      scene.background = new THREE.Color(0x110022);
+      scene.fog = new THREE.Fog(0x110022, 15, 60);
 
-      camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 1000);
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 1.8, 0);
 
       renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game'), antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.shadowMap.enabled = true;
 
+      // Lights
       scene.add(new THREE.AmbientLight(0xaaaaaa, 0.8));
-      const sun = new THREE.DirectionalLight(0xffaaff, 1.4);
-      sun.position.set(10, 25, 15);
-      scene.add(sun);
+      const dirLight = new THREE.DirectionalLight(0xffaaee, 1.2);
+      dirLight.position.set(10, 20, 10);
+      scene.add(dirLight);
 
       // Floor
       const floor = new THREE.Mesh(
-        new THREE.PlaneGeometry(60, 60),
-        new THREE.MeshStandardMaterial({ color: 0x220044, roughness: 0.9 })
+        new THREE.PlaneGeometry(100, 100),
+        new THREE.MeshStandardMaterial({ color: 0x220033 })
       );
       floor.rotation.x = -Math.PI / 2;
       scene.add(floor);
 
-      // Players
-      player1 = new Player("Kael", new THREE.Vector3(-7, 0, 0), true);
-      await player1.load("assets/models/kael.glb");
-      scene.add(player1.model);
+      // Enemy (Lira)
+      enemy = new SwordFighter(false);
+      enemy.model = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 4, 2),
+        new THREE.MeshStandardMaterial({ color: 0x9900ff })
+      );
+      enemy.model.position.set(8, 2, 0);
+      scene.add(enemy.model);
 
-      player2 = new Player("Lira", new THREE.Vector3(7, 0, 0), false);
-      await player2.load("assets/models/lira.glb");
-      scene.add(player2.model);
-
-      particleSystem = new ParticleSystem();
+      // Simple Sword for Player (First Person)
+      const swordGroup = new THREE.Group();
+      const blade = new THREE.Mesh(
+        new THREE.BoxGeometry(0.1, 3, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9 })
+      );
+      blade.position.set(0.5, -1.5, -1.5);
+      swordGroup.add(blade);
+      scene.add(swordGroup);
+      playerSword = swordGroup;
 
       document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
       document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+      document.addEventListener('mousedown', onMouseClick);
 
-      gameStarted = true;
+      // Lock mouse pointer
+      document.addEventListener('click', () => document.body.requestPointerLock());
+
+      document.addEventListener('mousemove', onMouseMove);
+
       animate();
+    }
+
+    let yaw = 0, pitch = 0;
+    function onMouseMove(e) {
+      if (document.pointerLockElement) {
+        yaw -= e.movementX * 0.002;
+        pitch -= e.movementY * 0.002;
+        pitch = Math.max(-1.5, Math.min(1.5, pitch));
+        camera.rotation.set(pitch, yaw, 0);
+      }
+    }
+
+    let playerSword;
+    function onMouseClick(e) {
+      if (e.button === 0 && canAttack) { // Left Click - Attack
+        attack();
+      }
+      if (e.button === 2) { // Right Click - Block
+        console.log("BLOCK!");
+      }
+    }
+
+    function attack() {
+      if (!canAttack) return;
+      canAttack = false;
+      isAttacking = true;
+
+      // Sword swing animation
+      playerSword.rotation.z = -1.2;
+      setTimeout(() => {
+        playerSword.rotation.z = 0;
+        isAttacking = false;
+      }, 300);
+
+      // Check hit
+      if (enemy.model) {
+        const distance = camera.position.distanceTo(enemy.model.position);
+        if (distance < 6) {
+          enemy.health -= 25;
+          createHitEffect(enemy.model.position);
+          if (enemy.health <= 0) {
+            alert("You Win! Victory!");
+            location.reload();
+          }
+        }
+      }
+
+      setTimeout(() => canAttack = true, 600);
+    }
+
+    function createHitEffect(pos) {
+      const particles = new THREE.Points(
+        new THREE.BufferGeometry(),
+        new THREE.PointsMaterial({ color: 0xff0000, size: 0.4 })
+      );
+      particles.position.copy(pos);
+      scene.add(particles);
+      setTimeout(() => scene.remove(particles), 300);
     }
 
     function animate() {
       requestAnimationFrame(animate);
-      if (!gameStarted) return;
 
-      const speed = 0.22;
+      // Player Movement
+      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
 
-      if (player1?.model) {
-        if (keys['a']) player1.model.position.x -= speed;
-        if (keys['d']) player1.model.position.x += speed;
-        if (keys['w']) player1.model.position.z -= speed;
-        if (keys['s']) player1.model.position.z += speed;
+      if (keys['w']) camera.position.addScaledVector(forward, moveSpeed);
+      if (keys['s']) camera.position.addScaledVector(forward, -moveSpeed);
+      if (keys['a']) camera.position.addScaledVector(right, -moveSpeed);
+      if (keys['d']) camera.position.addScaledVector(right, moveSpeed);
 
-        // Attacks
-        if (keys['j']) { particleSystem.createFireExplosion(player1.model.position); keys['j'] = false; }
-        if (keys['k']) { particleSystem.createShadowPulse(player1.model.position); keys['k'] = false; }
-        if (keys['l']) { player2.takeDamage(15); keys['l'] = false; }
+      // Enemy simple AI
+      if (enemy.model) {
+        const dirToPlayer = new THREE.Vector3().subVectors(camera.position, enemy.model.position).normalize();
+        enemy.model.position.addScaledVector(dirToPlayer, 0.08);
+
+        if (Math.random() < 0.02) {
+          createHitEffect(camera.position);
+          playerHealth -= 8;
+          document.getElementById('player-hp').textContent = Math.max(0, playerHealth);
+          if (playerHealth <= 0) {
+            alert("You Died! Game Over");
+            location.reload();
+          }
+        }
       }
 
-      updateCamera();
+      // Fire Power (Press F)
+      if (keys['f']) {
+        createFireExplosion(camera.position);
+        keys['f'] = false;
+      }
+
       renderer.render(scene, camera);
     }
 
-    // ====================== MENU ======================
-    function startGame() {
-      document.getElementById('main-menu').style.display = 'none';
-      document.getElementById('hud').style.display = 'block';
-      init();
+    function createFireExplosion(pos) {
+      const count = 50;
+      const geom = new THREE.BufferGeometry();
+      const positions = new Float32Array(count * 3);
+      for (let i = 0; i < count * 3; i += 3) {
+        positions[i] = pos.x + (Math.random()-0.5)*4;
+        positions[i+1] = pos.y + Math.random()*3;
+        positions[i+2] = pos.z + (Math.random()-0.5)*4;
+      }
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const mat = new THREE.PointsMaterial({ color: 0xff8800, size: 0.5, transparent: true });
+      const fire = new THREE.Points(geom, mat);
+      scene.add(fire);
+      setTimeout(() => scene.remove(fire), 600);
     }
 
-    function showTraining() { alert("Training Mode Coming Soon! 🔥"); }
-    function showOptions() { alert("Options Coming Soon!"); }
-
     window.addEventListener('resize', () => {
-      if (camera && renderer) {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      }
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    // Start Game
+    init();
   </script>
 </body>
 </html>
