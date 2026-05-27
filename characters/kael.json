@@ -1,0 +1,13 @@
+{
+  "name": "Kael",
+  "title": "Flame Swordsman",
+  "health": 100,
+  "speed": 0.18,
+  "power": "Fire",
+  "color": "#ff4400",
+  "moves": {
+    "light": { "name": "Flame Slash", "damage": 12, "cooldown": 0.4 },
+    "heavy": { "name": "Inferno Strike", "damage": 25, "cooldown": 1.2 },
+    "special": { "name": "Blazing Wave", "damage": 45, "cooldown": 3 }
+  }
+}
